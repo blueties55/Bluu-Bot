@@ -62,7 +62,6 @@ async def main():
     async def on_message(message):
         if message.author == bot.user:
             return
-        # Only DM response comes from settings.py now
         if isinstance(message.channel, discord.DMChannel) and settings.DM_RESPONSE:
             await message.add_reaction("👋")
             await message.author.send(settings.DM_RESPONSE)
