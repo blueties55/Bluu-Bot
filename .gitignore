@@ -10,10 +10,6 @@ __pycache__/
 # VS Code settings
 .vscode/
 
-# Database or other local files
-*.sqlite3
-*.db
-
 # Logs
 *.log
 
