@@ -1,0 +1,19 @@
+# Discord bot library
+discord.py==2.8.3
+
+# Environment variables
+python-dotenv==1.0.1
+
+# Image OCR and processing
+easyocr==1.6.2
+torch==2.2.0             # Required by EasyOCR
+Pillow==10.1.0           # For Image processing
+
+# HTTP requests
+requests==2.31.0
+
+# YAML config files
+PyYAML==6.0
+
+# PostgreSQL async database
+asyncpg==1.1.0
