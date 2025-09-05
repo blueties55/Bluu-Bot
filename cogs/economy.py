@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands, tasks
 import time
 from utils.db import Database
+import json
 
 class Economy(commands.Cog):
     def __init__(self, bot):
@@ -14,11 +15,12 @@ class Economy(commands.Cog):
         self.update_bal_task.start()
 
     def load_settings(self):
-        import configparser
-        config = configparser.ConfigParser()
-        config.read('settings.txt', encoding='utf-8')
-        self.owner_role = config.get('DEFAULT', 'owner_role')
-        self.allowed_channel_id = int(config.get('DEFAULT', 'bot_commands_channel_id'))
+        # Load from settings.json
+        with open("settings.json", "r", encoding="utf-8") as f:
+            config = json.load(f)
+        self.owner_role = config.get("bot_settings", {}).get("roles", {}).get("owner_role", "")
+        channels = config.get("bot_settings", {}).get("channels", {})
+        self.allowed_channel_id = int(channels.get("bot_commands_channel_id", 0))
 
     # ---------------------
     # Commands

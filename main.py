@@ -1,28 +1,28 @@
 import discord
 from discord.ext import commands
 import asyncio
-import configparser
 import logging
+import json
+import os
+from dotenv import load_dotenv
 from utils.db import Database
+
+# Load .env
+load_dotenv()
+DISCORD_API_TOKEN = os.getenv("DISCORD_API_TOKEN")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("bot")
 
-def read_settings(file_path):
-    config = configparser.ConfigParser()
-    with open(file_path, encoding='utf-8') as f:
-        config.read_file(f)
-    return config['DEFAULT']
+# Load settings.json
+with open("settings.json", "r", encoding="utf-8") as f:
+    config = json.load(f)
 
-def read_command_prefix(file_path):
-    return read_settings(file_path).get("command_prefix", "!")
-
-def read_mention_as_prefix(file_path):
-    return read_settings(file_path).get("mention_as_prefix", "False").lower() == "true"
-
-def read_dm_response(file_path):
-    return read_settings(file_path).get("dm_response", "")
+bot_settings = config.get("bot_settings", {})
+COMMAND_PREFIX = bot_settings.get("command_prefix", "!")
+MENTIONS_AS_PREFIX = bot_settings.get("mentions_as_prefix", False)
+DM_RESPONSE = bot_settings.get("dm_response", "")
 
 async def main():
     intents = discord.Intents.default()
@@ -30,11 +30,8 @@ async def main():
     intents.message_content = True
     intents.voice_states = True
 
-    command_prefix = read_command_prefix('settings.txt')
-    mention_as_prefix = read_mention_as_prefix('settings.txt')
-
     bot = commands.Bot(
-        command_prefix=commands.when_mentioned_or(command_prefix) if mention_as_prefix else command_prefix,
+        command_prefix=commands.when_mentioned_or(COMMAND_PREFIX) if MENTIONS_AS_PREFIX else COMMAND_PREFIX,
         intents=intents
     )
 
@@ -66,16 +63,15 @@ async def main():
 
     @bot.event
     async def on_message(message):
-        dm_response = read_dm_response('settings.txt')
         if message.author == bot.user:
             return
-        if isinstance(message.channel, discord.DMChannel) and dm_response:
+        if isinstance(message.channel, discord.DMChannel) and DM_RESPONSE:
             await message.add_reaction("👋")
-            await message.author.send(dm_response)
+            await message.author.send(DM_RESPONSE)
         else:
             await bot.process_commands(message)
 
-    DISCORD_API_TOKEN = read_settings('settings.txt').get("DISCORD_API_TOKEN", "")
+    # Start the bot
     await bot.start(DISCORD_API_TOKEN)
 
 if __name__ == "__main__":
