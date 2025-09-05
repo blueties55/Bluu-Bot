@@ -1,0 +1,18 @@
+{
+  "bot_settings": {
+    "command_prefix": "!",                        
+    "mentions_as_prefix": false,                 
+    "dm_response": "I see I was pinged. Please leave me alone; I am busy playing with humans. If you need something please DM <@YOUR_USER_ID>",
+    "owner_role": "OWNER_ROLE_NAME",             
+    "new_user_roles": [
+      "ROLE_1_NAME",
+      "ROLE_2_NAME"
+    ],
+    "channels": {
+      "roles_channel_id": 1234567890,                
+      "bot_commands_channel_id": 1234567890,  
+      "mini_games_channel_id": 1234567890,       
+      "shop_channel_id": 1234567890                  
+    }
+  }
+}
