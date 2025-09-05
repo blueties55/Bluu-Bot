@@ -14,12 +14,11 @@ class Shop(commands.Cog):
         self.load_settings()
         self.remove_roles.start()
 
-    def load_settings(self):
-        # Load allowed channel ID from settings.json
-        with open("settings.json", "r", encoding="utf-8") as f:
-            config = json.load(f)
-        channels_config = config.get("bot_settings", {}).get("channels", {})
-        self.allowed_channel_id = int(channels_config.get("shop_channel_id", 0))
+    async def cog_load(self):
+        async with self.db.pool.acquire() as conn:
+            row = await conn.fetchrow("SELECT channels->>'shop_channel_id' AS shop_channel_id FROM bot_settings WHERE id = 1")
+            if row and row['shop_channel_id']:
+                self.allowed_channel_id = int(row['shop_channel_id'])
 
     async def load_shop_items_from_db(self):
         """Fetch shop items from DB table `shop_items`"""
@@ -129,4 +128,6 @@ class Shop(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(Shop(bot))
+    cog = Shop(bot)
+    await cog.cog_load()
+    await bot.add_cog(cog)

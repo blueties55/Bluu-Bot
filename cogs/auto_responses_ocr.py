@@ -5,7 +5,6 @@ import easyocr
 from io import BytesIO
 import tempfile
 import logging
-import json
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -14,7 +13,6 @@ logger = logging.getLogger("bot")
 class Autoresponses(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.dm_response = ""
         self.keyword_responses = []
         self.filter_terms = []
         self.reader = easyocr.Reader(['en'])
@@ -22,11 +20,7 @@ class Autoresponses(commands.Cog):
         self.filter_response = "The message was removed because it has 'a bad word' in it."
     
     async def load_settings(self):
-        # Load dm_response from settings.json
-        with open("settings.json", "r", encoding="utf-8") as f:
-            config = json.load(f)
-        self.dm_response = config.get("bot_settings", {}).get("auto_responses", {}).get("dm_response", "")
-
+        """Load keywords and filtered terms from the database."""
         # Load keywords from DB
         self.keyword_responses = []
         async with self.bot.db.pool.acquire() as conn:
@@ -85,10 +79,6 @@ class Autoresponses(commands.Cog):
                 await message.delete()
                 await message.channel.send(self.filter_response)
                 return
-
-        # Check mentions
-        if self.bot.user.mentioned_in(message):
-            await message.channel.send(self.dm_response)
 
 async def setup(bot):
     cog = Autoresponses(bot)

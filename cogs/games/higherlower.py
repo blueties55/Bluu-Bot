@@ -9,9 +9,6 @@ from utils.minigame import MiniGame
 class HigherLower(MiniGame):
     @commands.command(name="higherlower", aliases=['hl'])
     async def hl(self, ctx, bet: int, member: discord.Member = None):
-        if ctx.channel.id != self.allowed_channel_id:
-            await ctx.send(f"Please use <#{self.allowed_channel_id}> for that command.")
-            return
 
         if member is None:
             member = ctx.author
@@ -50,7 +47,7 @@ class HigherLower(MiniGame):
             amount = bet
         elif random_number == 50:
             outcome = "tie"
-            amount = bet
+            amount = 0
         else:
             outcome = "lose"
             amount = bet

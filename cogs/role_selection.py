@@ -11,16 +11,16 @@ class RoleSelection(commands.Cog):
         self.default_roles = []
         self.role_data = {}
         self.owner_role = ""
-        self.load_settings()
 
-    def load_settings(self):
-        # Load owner role and default roles from settings.json
-        with open("settings.json", "r", encoding="utf-8") as f:
-            config = json.load(f)
-        bot_settings = config.get("bot_settings", {})
-        roles_config = bot_settings.get("roles", {})
-        self.owner_role = roles_config.get("owner_role", "Owner 👑")
-        self.default_roles = roles_config.get("default_roles", ["Newborns 👶"])
+    async def cog_load(self):
+        """Load owner_role and default_roles from the DB"""
+        async with self.db.pool.acquire() as conn:
+            row = await conn.fetchrow("SELECT owner_role, new_user_roles FROM bot_settings WHERE id = 1")
+            if row:
+                self.owner_role = row['owner_role']
+                # Assuming new_user_roles is a TEXT[] field in Postgres
+                self.default_roles = row['new_user_roles'] or ["Newborns 👶"]
+
 
     async def load_roles_from_db(self):
         """Fetch role selection info from DB table `roles`"""
@@ -99,4 +99,6 @@ class RoleSelection(commands.Cog):
                 await member.remove_roles(role)
 
 async def setup(bot):
-    await bot.add_cog(RoleSelection(bot))
+    cog = RoleSelection(bot)
+    await cog.cog_load()
+    await bot.add_cog(cog)

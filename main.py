@@ -2,10 +2,10 @@ import discord
 from discord.ext import commands
 import asyncio
 import logging
-import json
 import os
 from dotenv import load_dotenv
 from utils.db import Database
+import settings
 
 # Load .env
 load_dotenv()
@@ -15,23 +15,20 @@ DISCORD_API_TOKEN = os.getenv("DISCORD_API_TOKEN")
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("bot")
 
-# Load settings.json
-with open("settings.json", "r", encoding="utf-8") as f:
-    config = json.load(f)
-
-bot_settings = config.get("bot_settings", {})
-COMMAND_PREFIX = bot_settings.get("command_prefix", "!")
-MENTIONS_AS_PREFIX = bot_settings.get("mentions_as_prefix", False)
-DM_RESPONSE = bot_settings.get("dm_response", "")
-
 async def main():
+    # ------------------------
+    # Initialize settings from DB
+    # ------------------------
+    await settings.init_settings()  # Loads COMMAND_PREFIX, DM_RESPONSE, etc.
+
     intents = discord.Intents.default()
     intents.members = True
     intents.message_content = True
     intents.voice_states = True
 
     bot = commands.Bot(
-        command_prefix=commands.when_mentioned_or(COMMAND_PREFIX) if MENTIONS_AS_PREFIX else COMMAND_PREFIX,
+        command_prefix=commands.when_mentioned_or(settings.COMMAND_PREFIX)
+        if getattr(settings, "MENTIONS_AS_PREFIX", False) else settings.COMMAND_PREFIX,
         intents=intents
     )
 
@@ -65,9 +62,10 @@ async def main():
     async def on_message(message):
         if message.author == bot.user:
             return
-        if isinstance(message.channel, discord.DMChannel) and DM_RESPONSE:
+        # Only DM response comes from settings.py now
+        if isinstance(message.channel, discord.DMChannel) and settings.DM_RESPONSE:
             await message.add_reaction("👋")
-            await message.author.send(DM_RESPONSE)
+            await message.author.send(settings.DM_RESPONSE)
         else:
             await bot.process_commands(message)
 

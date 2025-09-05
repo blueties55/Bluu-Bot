@@ -7,20 +7,21 @@ import json
 class Economy(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.db = bot.db  # Use the shared Database instance
+        self.db = bot.db
         self.cooldowns = {}
         self.owner_role = ""
         self.allowed_channel_id = 0
-        self.load_settings()
         self.update_bal_task.start()
 
-    def load_settings(self):
-        # Load from settings.json
-        with open("settings.json", "r", encoding="utf-8") as f:
-            config = json.load(f)
-        self.owner_role = config.get("bot_settings", {}).get("roles", {}).get("owner_role", "")
-        channels = config.get("bot_settings", {}).get("channels", {})
-        self.allowed_channel_id = int(channels.get("bot_commands_channel_id", 0))
+    async def cog_load(self):
+        await self.load_settings()
+
+    async def load_settings(self):
+        async with self.db.pool.acquire() as conn:
+            row = await conn.fetchrow("SELECT owner_role, channels FROM bot_settings WHERE id = 1")
+            if row:
+                self.owner_role = row['owner_role']
+                self.allowed_channel_id = row['channels'].get("bot_commands_channel_id", 0)
 
     # ---------------------
     # Commands

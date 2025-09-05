@@ -1,58 +1,38 @@
 import os
-import json
 import logging
 from logging.config import dictConfig
 from dotenv import load_dotenv
+import asyncio
+import asyncpg
 
-# Load environment variables from .env
+# -----------------------
+# Environment Variables
+# -----------------------
 load_dotenv()
 
-# Fetch the Discord token from .env
 DISCORD_API_TOKEN = os.getenv("DISCORD_API_TOKEN")
+PG_USER = os.getenv("PG_USER")
+PG_PASSWORD = os.getenv("PG_PASSWORD")
+PG_DATABASE = os.getenv("PG_DATABASE")
+PG_HOST = os.getenv("PG_HOST", "localhost")
+PG_PORT = int(os.getenv("PG_PORT", 5432))
 
-# Load all other bot settings from settings.json
-with open("settings.json", "r", encoding="utf-8") as f:
-    config = json.load(f)
-
-bot_settings = config.get("bot_settings", {})
-
-COMMAND_PREFIX = bot_settings.get("command_prefix", "!")
-DM_RESPONSE = bot_settings.get("dm_response", "")
-OWNER_ROLE = bot_settings.get("owner_role", "Owner 👑")
-NEW_USER_ROLES = bot_settings.get("new_user_roles", [])
-CHANNELS = bot_settings.get("channels", {})
-
-# Example channel access
-ROLES_CHANNEL_ID = CHANNELS.get("roles_channel_id")
-BOT_COMMANDS_CHANNEL_ID = CHANNELS.get("bot_commands_channel_id")
-MINI_GAMES_CHANNEL_ID = CHANNELS.get("mini_games_channel_id")
-SHOP_CHANNEL_ID = CHANNELS.get("shop_channel_id")
-
-# Log directory setup
+# -----------------------
+# Logging Configuration
+# -----------------------
 log_dir = './logs'
 os.makedirs(log_dir, exist_ok=True)
 
-# Logging configuration
 LOGGING_CONFIG = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "verbose": {
-            "format": "%(levelname)-10s - %(asctime)s - %(module)-15s : %(message)s"
-        },
+        "verbose": {"format": "%(levelname)-10s - %(asctime)s - %(module)-15s : %(message)s"},
         "standard": {"format": "%(levelname)-10s - %(name)-15s : %(message)s"},
     },
     "handlers": {
-        "console": {
-            "level": "DEBUG",
-            "class": "logging.StreamHandler",
-            "formatter": "standard",
-        },
-        "console2": {
-            "level": "WARNING",
-            "class": "logging.StreamHandler",
-            "formatter": "standard",
-        },
+        "console": {"level": "DEBUG", "class": "logging.StreamHandler", "formatter": "standard"},
+        "console2": {"level": "WARNING", "class": "logging.StreamHandler", "formatter": "standard"},
         "file": {
             "level": "INFO",
             "class": "logging.FileHandler",
@@ -63,13 +43,73 @@ LOGGING_CONFIG = {
     },
     "loggers": {
         "bot": {"handlers": ["console"], "level": "INFO", "propagate": False},
-        "discord": {
-            "handlers": ["console2", "file"],
-            "level": "INFO",
-            "propagate": False,
-        },
+        "discord": {"handlers": ["console2", "file"], "level": "INFO", "propagate": False},
     },
 }
 
-# Apply the logging configuration
 dictConfig(LOGGING_CONFIG)
+
+# -----------------------
+# Database Connection
+# -----------------------
+pool = None
+
+async def init_db():
+    """Initialize the asyncpg connection pool."""
+    global pool
+    pool = await asyncpg.create_pool(
+        user=PG_USER,
+        password=PG_PASSWORD,
+        database=PG_DATABASE,
+        host=PG_HOST,
+        port=PG_PORT
+    )
+
+async def load_bot_settings():
+    """Load bot settings from the database."""
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow("SELECT * FROM bot_settings WHERE id = 1;")
+        if not row:
+            raise ValueError("No settings found in bot_settings table!")
+        return {
+            "COMMAND_PREFIX": row["command_prefix"],
+            "DM_RESPONSE": row["dm_response"],
+            "OWNER_ROLE": row["owner_role"],
+            "NEW_USER_ROLES": row["new_user_roles"],  # list
+            "CHANNELS": row["channels"],              # dict
+        }
+
+# -----------------------
+# Global settings variables
+# -----------------------
+COMMAND_PREFIX = None
+DM_RESPONSE = None
+OWNER_ROLE = None
+NEW_USER_ROLES = None
+CHANNELS = None
+ROLES_CHANNEL_ID = None
+BOT_COMMANDS_CHANNEL_ID = None
+MINI_GAMES_CHANNEL_ID = None
+SHOP_CHANNEL_ID = None
+
+# -----------------------
+# Initialization function
+# -----------------------
+async def init_settings():
+    """Call this once at bot startup to load settings from DB."""
+    await init_db()
+    settings = await load_bot_settings()
+
+    global COMMAND_PREFIX, DM_RESPONSE, OWNER_ROLE, NEW_USER_ROLES
+    global CHANNELS, ROLES_CHANNEL_ID, BOT_COMMANDS_CHANNEL_ID, MINI_GAMES_CHANNEL_ID, SHOP_CHANNEL_ID
+
+    COMMAND_PREFIX = settings["COMMAND_PREFIX"]
+    DM_RESPONSE = settings["DM_RESPONSE"]
+    OWNER_ROLE = settings["OWNER_ROLE"]
+    NEW_USER_ROLES = settings["NEW_USER_ROLES"]
+    CHANNELS = settings["CHANNELS"]
+
+    ROLES_CHANNEL_ID = CHANNELS.get("roles_channel_id")
+    BOT_COMMANDS_CHANNEL_ID = CHANNELS.get("bot_commands_channel_id")
+    MINI_GAMES_CHANNEL_ID = CHANNELS.get("mini_games_channel_id")
+    SHOP_CHANNEL_ID = CHANNELS.get("shop_channel_id")

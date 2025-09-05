@@ -68,22 +68,20 @@ class Roulette(MiniGame):
             # Color bet
             if (choice == '🔴' and result_color == 'red') or (choice == '⚫' and result_color == 'black'):
                 outcome = "win"
-                payout = bet * 2
+                amount = bet * 2
             else:
                 outcome = "lose"
-                payout = bet
+                amount = bet
         else:
             # Number bet
             chosen_number = int(choice[0])
             if chosen_number == result_number:
                 outcome = "win"
-                payout = bet * 3
+                amount = bet * 3
             else:
                 outcome = "lose"
-                payout = bet
+                amount = bet
 
-        # Set amount to the calculated payout for game_result
-        amount = payout
         # Use game_result helper
         await self.db.game_result(ctx, user_id, member, outcome, amount, description=f"The roulette landed on {result_number} ({result_color})!")
 

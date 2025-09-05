@@ -9,7 +9,6 @@ from dotenv import load_dotenv
 load_dotenv()
 OPENAI_API_KEY = os.getenv('OPENAI_API_TOKEN')
 
-# Load OpenAI configuration from YAML file with specified encoding
 with open('OpenAIConfig.yml', 'r', encoding='utf-8') as file:
     openai_config = yaml.safe_load(file)
 
@@ -24,13 +23,11 @@ class ChatGPTCog(commands.Cog):
         self.presence_penalty = openai_config['openai']['presence_penalty']
         self.instructions = openai_config['instructions']
 
-    # Function to get a response from ChatGPT
     def get_chatgpt_response(self, message):
         headers = {
             'Authorization': f'Bearer {OPENAI_API_KEY}',
             'Content-Type': 'application/json'
         }
-
         data = {
             'model': self.openai_model,
             'messages': [
@@ -43,23 +40,24 @@ class ChatGPTCog(commands.Cog):
             'frequency_penalty': self.frequency_penalty,
             'presence_penalty': self.presence_penalty
         }
-
-        response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, data=json.dumps(data))
+        response = requests.post(
+            'https://api.openai.com/v1/chat/completions',
+            headers=headers,
+            data=json.dumps(data)
+        )
         response_json = response.json()
-
         if 'choices' in response_json:
             return response_json['choices'][0]['message']['content']
         else:
-            # Log the error for debugging purposes
             print(f"Error in OpenAI API response: {response_json}")
-            return "Fuck if I know."
+            return "Sorry, I couldn't generate a response."
 
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.author == self.bot.user:
             return
 
-        # Check if the bot is mentioned
+        # Only respond when bot is mentioned in a guild channel
         if self.bot.user in message.mentions:
             user_message = message.content.replace(f'<@!{self.bot.user.id}>', '').strip()
             response = self.get_chatgpt_response(user_message)
