@@ -1,0 +1,42 @@
+#######################################################
+# Config for the Custom Bot Shop Commands             #
+#######################################################
+# Any line starting with # is ignored                 #
+# You MUST update this for the shop to work           #
+# FORMATTING IS VERY IMPORTANT FOLLOW IT CLOSELY      #
+# Open in Notepad++ for best results                  #
+#######################################################
+[DEFAULT]
+
+# Set this value to your shop command channel or bot command channel.
+# You must set this to use most of the bot commands, this helps keep general chat channels clean.
+# To copy the channel ID of a text channel enable Developer Mode in discords advanced settings first
+# Then simply right click any channel and Copy Channel ID will be an option. Paste that below.
+
+allowed_channel_id=allowed_channel_id
+
+# These roles are all the roles users will be able to purchase with the shop command.
+# The reactions will need to be specified below as well as the exact name of the role
+# First is the emoji to react with, "name" is the title of the role in the message from the bot,
+# "shop_item" is the specific role the bot will give the users.
+# This will take coins from the user in the economy.db file created by the bot.
+
+shop_item_emoji_1=🎟️
+shop_item_name_1=item_title
+shop_item_price_1=12345
+shop_item_1=role_name
+
+shop_item_emoji_2=👶
+shop_item_name_2=item_title
+shop_item_price_2=12345
+shop_item_2=role_name
+
+shop_item_emoji_3=💎
+shop_item_name_3=item_title
+shop_item_price_3=12345
+shop_item_3=role_name
+
+shop_item_emoji_4=🎧
+shop_item_name_4=item_title
+shop_item_price_4=12345
+shop_item_4=role_name

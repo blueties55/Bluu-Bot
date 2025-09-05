@@ -1,0 +1,44 @@
+#######################################################
+# Config for the Custom Bot                           #
+#######################################################
+# Any line starting with # is ignored                 #
+# FORMATTING IS VERY IMPORTANT FOLLOW IT CLOSELY      #
+# Open in Notepad++ for best results                  #
+#######################################################
+[DEFAULT]
+
+#######################################################
+# This will set the message you would like            #
+# users to receive when they @ the bot in a text chat.#
+# This is an optional feature and if you would like   #
+# nothing will happen if you leave this field blank.  #
+#######################################################
+
+dm_response=I see I was pinged. Please leave me alone; I am busy playing with humans. If you need something please DM <@owner_user_id>
+
+#######################################################
+# Config for the Custom Bot AutoResponses             #
+#######################################################
+# keyword_* comes from user messages                  #
+# response_* is what the bot replies with in response #
+# You can add as many more key words you wish,        # 
+# however make sure you continue the counting i.e.    #
+# keyword_1 response_1, keyword_2 response_2 etc.     #
+#######################################################
+
+# Example keyword & Response
+keyword_1=example
+response_1=The example is working
+
+#######################################################
+# Config for the Custom Bot AutoResponses             #
+#######################################################
+# filter_* comes from user messages                   #
+# response_* is what the bot replies with in response #
+# You can add as many more key words you wish,        # 
+# however make sure you continue the counting i.e.    #
+# filter_1 response_1, filter_2 response_2 etc.       #
+#######################################################
+
+filter_1=badword
+response_filter_1=The message was removed because it has 'a bad word' in it.
