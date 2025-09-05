@@ -48,7 +48,7 @@ Ensure you have the following installed:
    - `mentions_as_prefix`: Whether @mentions can be used as a command prefix (True or False)
    - `dm_response`: Message sent when the bot receives a DM
    - `owner_role`: Role that is assigned to only the server owner
-   - `net_user_roles`: List of roles that are given to ever new member of the server
+   - `new_user_roles`: List of roles that are given to ever new member of the server
    - `channels`: List of the different required channels for different command types
    -   `roles_channel_id`: Role selection message channel
    -   `bot_commands_channel_id`: General commands channel
