@@ -37,23 +37,25 @@ Ensure you have the following installed:
 3. Copy the example configuration settings files:
 
     ```bash
-    cp "Example Settings Files/settings.example.txt" settings.txt
-    cp "Example Settings Files/auto_responses_settings.example.txt" auto_responses_settings.txt
-    cp "Example Settings Files/role_selection_settings.example.txt" role_selection_settings.txt
-    cp "Example Settings Files/shop_settings.example.txt" shop_settings.txt
-    cp "Example Settings Files/OpenAIConfig.example.yml" OpenAIConfig.yml
+    cp "Example Settings Files/settings.example.json" settings.json
     ```
     Note: On Windows, you can manually copy and rename the file instead if cp doesn't work.
    
 5. Open `settings.txt` in a text editor and replace the placeholders with your actual values:
 
-   - `DISCORD_API_TOKEN`: Your Discord bot token
    - `allowed_channel_id`: The ID of the text channel for music commands
    - `command_prefix`: Prefix for bot commands (default is ?)
    - `mentions_as_prefix`: Whether @mentions can be used as a command prefix (True or False)
    - `dm_response`: Message sent when the bot receives a DM
+   - `owner_role`: Role that is assigned to only the server owner
+   - `net_user_roles`: List of roles that are given to ever new member of the server
+   - `channels`: List of the different required channels for different command types
+   -   `roles_channel_id`: Role selection message channel
+   -   `bot_commands_channel_id`: General commands channel
+   -   `mini_games_channel_id`: Mini-Games channel
+   -   `shop_channel_id`: Shopping commands channel
 
-   Important: Do not change the parameter names (everything before the = sign).
+   Important: Do not change the parameter names.
 
 Usage
 -----
