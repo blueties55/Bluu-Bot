@@ -1,0 +1,34 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Environment files
+.env
+
+# VS Code settings
+.vscode/
+
+# Database or other local files
+*.sqlite3
+*.db
+
+# Logs
+*.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Python virtual environments
+venv/
+env/
+.venv/
+
+# Ignore settings files with sensitive info (optional)
+auto_responses_settings.txt
+role_selection_settings.txt
+settings.txt
+shop_settings.txt
+OpenAIConfig.yml
