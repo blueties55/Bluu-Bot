@@ -11,14 +11,20 @@ class Shop(commands.Cog):
         self.db: Database = bot.db
         self.shop_items = {}
         self.allowed_channel_id = 0
-        self.load_settings()
         self.remove_roles.start()
 
     async def cog_load(self):
+        """Load settings from DB safely"""
         async with self.db.pool.acquire() as conn:
-            row = await conn.fetchrow("SELECT channels->>'shop_channel_id' AS shop_channel_id FROM bot_settings WHERE id = 1")
-            if row and row['shop_channel_id']:
-                self.allowed_channel_id = int(row['shop_channel_id'])
+            row = await conn.fetchrow("SELECT channels, owner_role FROM bot_settings WHERE id = 1")
+            if row:
+                channels = row["channels"]
+                if isinstance(channels, str):
+                    channels = json.loads(channels)
+                elif channels is None:
+                    channels = {}
+
+                self.allowed_channel_id = channels.get("shop_channel_id", 0)
 
     async def load_shop_items_from_db(self):
         """Fetch shop items from DB table `shop_items`"""
@@ -29,7 +35,7 @@ class Shop(commands.Cog):
                 self.shop_items[row["emoji"]] = {
                     "name": row["display_name"],
                     "shop_item": row["item_name"],
-                    "price": row["price"]
+                    "price": int(row["price"])
                 }
 
     @tasks.loop(minutes=15)
@@ -129,5 +135,5 @@ class Shop(commands.Cog):
 
 async def setup(bot):
     cog = Shop(bot)
-    await cog.cog_load()
+    await cog.cog_load()  # load settings asynchronously
     await bot.add_cog(cog)

@@ -21,7 +21,16 @@ class Economy(commands.Cog):
             row = await conn.fetchrow("SELECT owner_role, channels FROM bot_settings WHERE id = 1")
             if row:
                 self.owner_role = row['owner_role']
-                self.allowed_channel_id = row['channels'].get("bot_commands_channel_id", 0)
+                
+                # Ensure channels is a dict
+                channels = row['channels']
+                if isinstance(channels, str):
+                    import json
+                    channels = json.loads(channels)
+                elif channels is None:
+                    channels = {}
+                
+                self.allowed_channel_id = channels.get("bot_commands_channel_id", 0)
 
     # ---------------------
     # Commands
@@ -88,10 +97,11 @@ class Economy(commands.Cog):
             return
 
         economy_data = []
+        guild = ctx.guild  # get the guild where the command was run
         async with self.db.pool.acquire() as conn:
             rows = await conn.fetch('SELECT user_id, coins FROM economy ORDER BY coins DESC LIMIT 15')
             for row in rows:
-                user = await self.bot.fetch_user(row['user_id'])
+                user = guild.get_member(row['user_id'])  # safer than fetch_user
                 username = user.display_name if user else f"Unknown User({row['user_id']})"
                 economy_data.append((username, row['coins']))
 

@@ -5,6 +5,7 @@ import easyocr
 from io import BytesIO
 import tempfile
 import logging
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -52,18 +53,24 @@ class Autoresponses(commands.Cog):
                 if attachment.content_type and attachment.content_type.startswith("image"):
                     image_bytes = await attachment.read()
                     image = Image.open(BytesIO(image_bytes))
-                    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_image:
-                        temp_image_path = temp_image.name
-                        image.save(temp_image_path)
-                        result = self.reader.readtext(temp_image_path)
-                    for text in result:
-                        text_lower = text[1].lower()
-                        for kw in self.keyword_responses:
-                            if kw["keyword"] in text_lower:
-                                for r in kw["responses"]:
-                                    await message.channel.send(r)
-                                await message.add_reaction(self.keyword_reaction)
-                                return
+                    temp_image_path = None
+                    try:
+                        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_image:
+                            temp_image_path = temp_image.name
+                            image.save(temp_image_path)
+                            result = self.reader.readtext(temp_image_path)
+                        
+                        for text in result:
+                            text_lower = text[1].lower()
+                            for kw in self.keyword_responses:
+                                if kw["keyword"] in text_lower:
+                                    for r in kw["responses"]:
+                                        await message.channel.send(r)
+                                    await message.add_reaction(self.keyword_reaction)
+                                    return
+                    finally:
+                        if temp_image_path and os.path.exists(temp_image_path):
+                            os.remove(temp_image_path)
 
         # Check keywords in message content
         for kw in self.keyword_responses:

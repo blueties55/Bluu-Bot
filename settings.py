@@ -4,6 +4,7 @@ from logging.config import dictConfig
 from dotenv import load_dotenv
 import asyncio
 import asyncpg
+import json
 
 # -----------------------
 # Environment Variables
@@ -11,11 +12,11 @@ import asyncpg
 load_dotenv()
 
 DISCORD_API_TOKEN = os.getenv("DISCORD_API_TOKEN")
-PG_USER = os.getenv("PG_USER")
-PG_PASSWORD = os.getenv("PG_PASSWORD")
-PG_DATABASE = os.getenv("PG_DATABASE")
-PG_HOST = os.getenv("PG_HOST", "localhost")
-PG_PORT = int(os.getenv("PG_PORT", 5432))
+PG_USER = os.getenv("DB_USER")
+PG_PASSWORD = os.getenv("DB_PASSWORD")
+PG_DATABASE = os.getenv("DB_NAME")
+PG_HOST = os.getenv("DB_HOST", "localhost")
+PG_PORT = int(os.getenv("DB_PORT", 5432))
 
 # -----------------------
 # Logging Configuration
@@ -62,7 +63,7 @@ async def init_db():
         password=PG_PASSWORD,
         database=PG_DATABASE,
         host=PG_HOST,
-        port=PG_PORT
+        port=PG_PORT,
     )
 
 async def load_bot_settings():
@@ -71,13 +72,24 @@ async def load_bot_settings():
         row = await conn.fetchrow("SELECT * FROM bot_settings WHERE id = 1;")
         if not row:
             raise ValueError("No settings found in bot_settings table!")
+        
+        # Parse JSON fields
+        channels = row["channels"]
+        if isinstance(channels, str):
+            channels = json.loads(channels)
+
+        new_user_roles = row["new_user_roles"]
+        if isinstance(new_user_roles, str):
+            new_user_roles = json.loads(new_user_roles)
+
         return {
             "COMMAND_PREFIX": row["command_prefix"],
             "DM_RESPONSE": row["dm_response"],
             "OWNER_ROLE": row["owner_role"],
-            "NEW_USER_ROLES": row["new_user_roles"],  # list
-            "CHANNELS": row["channels"],              # dict
+            "NEW_USER_ROLES": new_user_roles,  # list
+            "CHANNELS": channels,              # dict
         }
+
 
 # -----------------------
 # Global settings variables
